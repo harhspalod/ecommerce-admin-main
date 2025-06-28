@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/shared/AppSidebar";
 import Header from "@/components/shared/header";
@@ -6,12 +5,10 @@ import Container from "@/components/ui/container";
 
 type Props = {
   children: React.ReactNode;
+  defaultOpen: boolean;
 };
 
-export default async function SidebarWrapper({ children }: Props) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
-
+export default function SidebarWrapper({ children, defaultOpen }: Props) {
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
