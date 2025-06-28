@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { toast } from "sonner";
 
 import {
   DropdownMenu,
@@ -13,6 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, LogOut, LayoutGrid } from "lucide-react";
 
 export default function Profile() {
+  const handleLogout = () => {
+    toast.success("Logged out successfully!");
+    // In a real app, you would handle logout logic here
+  };
+
   return (
     <div className="flex ml-2">
       <DropdownMenu modal={false}>
@@ -46,16 +52,14 @@ export default function Profile() {
             </Link>
           </DropdownMenuItem>
 
-          <form action="/auth/sign-out" method="post">
-            <DropdownMenuItem asChild>
-              <button
-                type="submit"
-                className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
-              >
-                <LogOut className="mr-3 size-5" /> Log Out
-              </button>
-            </DropdownMenuItem>
-          </form>
+          <DropdownMenuItem asChild>
+            <button
+              onClick={handleLogout}
+              className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
+            >
+              <LogOut className="mr-3 size-5" /> Log Out
+            </button>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

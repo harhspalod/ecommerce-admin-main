@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { BsFillHandbagFill } from "react-icons/bs";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { navItems } from "@/constants/navItems";
@@ -15,6 +16,11 @@ import { useSidebar } from "@/components/ui/sidebar";
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleLogout = () => {
+    toast.success("Logged out successfully!");
+    // In a real app, you would handle logout logic here
+  };
 
   return (
     <Sidebar className="shadow-md">
@@ -53,15 +59,13 @@ export default function AppSidebar() {
           </div>
 
           <div className="px-6 py-4 absolute left-0 w-full right-0 bottom-0 border-t">
-            <form action="/auth/sign-out" method="post">
-              <Button
-                type="submit"
-                className="w-full py-3 text-base whitespace-nowrap"
-              >
-                <LogOut className="size-6 mr-3 flex-shrink-0" />
-                Log out
-              </Button>
-            </form>
+            <Button
+              onClick={handleLogout}
+              className="w-full py-3 text-base whitespace-nowrap"
+            >
+              <LogOut className="size-6 mr-3 flex-shrink-0" />
+              Log out
+            </Button>
           </div>
         </div>
       </SidebarContent>

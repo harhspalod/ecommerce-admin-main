@@ -1,15 +1,15 @@
-import axiosInstance from "@/helpers/axiosInstance";
-
 import { Product } from "@/types/product";
 import { PaginationData, PaginationQueryProps } from "@/types/pagination";
+import { generateProducts, paginateData } from "./mockData";
+
+const mockProducts = generateProducts(100);
 
 export const fetchProducts = async ({
   page,
   perPage = 10,
-}: PaginationQueryProps) => {
-  await new Promise((resolve, reject) => setTimeout(resolve, 500));
-  const { data } = await axiosInstance.get(
-    `/products?_page=${page}&_per_page=${perPage}`
-  );
-  return data as PaginationData<Product>;
+}: PaginationQueryProps): Promise<PaginationData<Product>> => {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  
+  return paginateData(mockProducts, page, perPage);
 };

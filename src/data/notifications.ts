@@ -1,13 +1,18 @@
-import axiosInstance from "@/helpers/axiosInstance";
 import { Notification } from "@/types/notifications";
+import { generateNotifications } from "./mockData";
 
-export const fetchNotifications = async () => {
-  await new Promise((resolve, reject) => setTimeout(resolve, 500));
-  const { data } = await axiosInstance.get("/notifications");
-  return data as Notification[];
+let mockNotifications = generateNotifications(20);
+
+export const fetchNotifications = async (): Promise<Notification[]> => {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  
+  return mockNotifications;
 };
 
-export const deleteNotification = async (id: string) => {
-  await new Promise((resolve, reject) => setTimeout(reject, 500));
-  await axiosInstance.delete(`/notifications/${id}`);
+export const deleteNotification = async (id: string): Promise<void> => {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  
+  mockNotifications = mockNotifications.filter(notification => notification.id !== id);
 };

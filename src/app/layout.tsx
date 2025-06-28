@@ -5,9 +5,6 @@ import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// pages have to be rendered dynamically because supabase server component client uses cookies
-export const dynamic = "force-dynamic";
-
 export default function RootLayout({
   children,
 }: {
