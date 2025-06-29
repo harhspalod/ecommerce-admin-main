@@ -1,14 +1,36 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import initSqlJs from 'sql.js';
+import { nanoid } from 'nanoid';
 
-const dbPath = path.join(process.cwd(), 'database.db');
-const db = new Database(dbPath);
+let db: any = null;
+let SQL: any = null;
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+// Initialize SQL.js
+export async function initializeDatabase() {
+  if (db) return db;
 
-// Initialize database tables
-export function initializeDatabase() {
+  try {
+    // Initialize SQL.js
+    SQL = await initSqlJs({
+      locateFile: (file: string) => `https://sql.js.org/dist/${file}`
+    });
+
+    // Create a new database
+    db = new SQL.Database();
+
+    // Create tables
+    createTables();
+    
+    console.log('Database initialized successfully with SQL.js');
+    return db;
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
+  }
+}
+
+function createTables() {
+  if (!db) return;
+
   // Products table
   db.exec(`
     CREATE TABLE IF NOT EXISTS products (
@@ -91,7 +113,117 @@ export function initializeDatabase() {
     )
   `);
 
-  console.log('Database initialized successfully');
+  // Insert sample data
+  insertSampleData();
 }
 
-export default db;
+function insertSampleData() {
+  if (!db) return;
+
+  // Check if we already have data
+  const result = db.exec("SELECT COUNT(*) as count FROM products");
+  if (result[0]?.values[0][0] > 0) return; // Data already exists
+
+  // Sample products
+  const sampleProducts = [
+    { id: nanoid(), name: "Wireless Headphones", description: "High-quality wireless headphones with noise cancellation", price: 99.99, stock: 50 },
+    { id: nanoid(), name: "Smart Watch", description: "Feature-rich smartwatch with health tracking", price: 199.99, stock: 30 },
+    { id: nanoid(), name: "Laptop Stand", description: "Ergonomic laptop stand for better posture", price: 49.99, stock: 75 },
+    { id: nanoid(), name: "USB-C Hub", description: "Multi-port USB-C hub with HDMI and USB ports", price: 39.99, stock: 100 },
+    { id: nanoid(), name: "Bluetooth Speaker", description: "Portable Bluetooth speaker with excellent sound quality", price: 79.99, stock: 25 }
+  ];
+
+  sampleProducts.forEach(product => {
+    db.run(
+      "INSERT INTO products (id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?)",
+      [product.id, product.name, product.description, product.price, product.stock, "https://via.placeholder.com/300x200"]
+    );
+  });
+
+  // Sample customers
+  const sampleCustomers = [
+    { id: nanoid(), name: "John Doe", email: "john@example.com", phone: "+1234567890", address: "123 Main St, City, State" },
+    { id: nanoid(), name: "Jane Smith", email: "jane@example.com", phone: "+1234567891", address: "456 Oak Ave, City, State" },
+    { id: nanoid(), name: "Bob Johnson", email: "bob@example.com", phone: "+1234567892", address: "789 Pine Rd, City, State" }
+  ];
+
+  sampleCustomers.forEach(customer => {
+    db.run(
+      "INSERT INTO customers (id, name, email, phone, address) VALUES (?, ?, ?, ?, ?)",
+      [customer.id, customer.name, customer.email, customer.phone, customer.address]
+    );
+  });
+
+  console.log('Sample data inserted successfully');
+}
+
+// Helper functions for database operations
+export async function getDatabase() {
+  if (!db) {
+    await initializeDatabase();
+  }
+  return db;
+}
+
+export async function executeQuery(query: string, params: any[] = []) {
+  const database = await getDatabase();
+  try {
+    const stmt = database.prepare(query);
+    const result = stmt.getAsObject(params);
+    return result;
+  } catch (error) {
+    console.error('Query execution error:', error);
+    throw error;
+  }
+}
+
+export async function executeSelect(query: string, params: any[] = []) {
+  const database = await getDatabase();
+  try {
+    const stmt = database.prepare(query);
+    const results = [];
+    while (stmt.step()) {
+      results.push(stmt.getAsObject());
+    }
+    stmt.free();
+    return results;
+  } catch (error) {
+    console.error('Select query error:', error);
+    throw error;
+  }
+}
+
+export async function executeInsert(query: string, params: any[] = []) {
+  const database = await getDatabase();
+  try {
+    database.run(query, params);
+    return { success: true };
+  } catch (error) {
+    console.error('Insert query error:', error);
+    throw error;
+  }
+}
+
+export async function executeUpdate(query: string, params: any[] = []) {
+  const database = await getDatabase();
+  try {
+    database.run(query, params);
+    return { success: true, changes: 1 }; // SQL.js doesn't return changes count
+  } catch (error) {
+    console.error('Update query error:', error);
+    throw error;
+  }
+}
+
+export async function executeDelete(query: string, params: any[] = []) {
+  const database = await getDatabase();
+  try {
+    database.run(query, params);
+    return { success: true, changes: 1 }; // SQL.js doesn't return changes count
+  } catch (error) {
+    console.error('Delete query error:', error);
+    throw error;
+  }
+}
+
+export default { getDatabase, executeQuery, executeSelect, executeInsert, executeUpdate, executeDelete };

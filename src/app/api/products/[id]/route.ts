@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { executeSelect, executeUpdate, executeDelete } from '@/lib/database';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(params.id);
+    const product = await executeSelect('SELECT * FROM products WHERE id = ?', [params.id]);
     
-    if (!product) {
+    if (product.length === 0) {
       return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: product });
+    return NextResponse.json({ success: true, data: product[0] });
   } catch (error) {
+    console.error('Product GET error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch product' }, { status: 500 });
   }
 }
@@ -20,36 +21,32 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json();
     const { name, description, price, stock, image_url } = body;
 
-    const stmt = db.prepare(`
-      UPDATE products 
-      SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+    await executeUpdate(
+      `UPDATE products 
+       SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [name, description, price, stock, image_url, params.id]
+    );
 
-    const result = stmt.run(name, description, price, stock, image_url, params.id);
-
-    if (result.changes === 0) {
+    const updatedProduct = await executeSelect('SELECT * FROM products WHERE id = ?', [params.id]);
+    
+    if (updatedProduct.length === 0) {
       return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
     }
 
-    const updatedProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(params.id);
-    return NextResponse.json({ success: true, data: updatedProduct });
+    return NextResponse.json({ success: true, data: updatedProduct[0] });
   } catch (error) {
+    console.error('Product PUT error:', error);
     return NextResponse.json({ success: false, error: 'Failed to update product' }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-    const result = stmt.run(params.id);
-
-    if (result.changes === 0) {
-      return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
-    }
-
+    await executeDelete('DELETE FROM products WHERE id = ?', [params.id]);
     return NextResponse.json({ success: true, message: 'Product deleted successfully' });
   } catch (error) {
+    console.error('Product DELETE error:', error);
     return NextResponse.json({ success: false, error: 'Failed to delete product' }, { status: 500 });
   }
 }

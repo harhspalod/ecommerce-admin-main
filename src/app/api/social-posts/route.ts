@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { executeSelect, executeInsert } from '@/lib/database';
 import { nanoid } from 'nanoid';
 
 export async function GET() {
   try {
-    const posts = db.prepare(`
+    const posts = await executeSelect(`
       SELECT sp.*, p.name as product_name
       FROM social_posts sp
       LEFT JOIN products p ON sp.product_id = p.id
       ORDER BY sp.created_at DESC
-    `).all();
+    `);
 
     return NextResponse.json({ success: true, data: posts });
   } catch (error) {
+    console.error('Social posts GET error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch social posts' }, { status: 500 });
   }
 }
@@ -30,22 +31,22 @@ export async function POST(request: NextRequest) {
     }
 
     const id = nanoid();
-    const stmt = db.prepare(`
-      INSERT INTO social_posts (id, title, content, platform, product_id, image_url, scheduled_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
+    await executeInsert(
+      `INSERT INTO social_posts (id, title, content, platform, product_id, image_url, scheduled_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, title, content, platform, product_id || null, image_url || null, scheduled_at || null]
+    );
 
-    stmt.run(id, title, content, platform, product_id || null, image_url || null, scheduled_at || null);
-
-    const newPost = db.prepare(`
+    const newPost = await executeSelect(`
       SELECT sp.*, p.name as product_name
       FROM social_posts sp
       LEFT JOIN products p ON sp.product_id = p.id
       WHERE sp.id = ?
-    `).get(id);
+    `, [id]);
 
-    return NextResponse.json({ success: true, data: newPost }, { status: 201 });
+    return NextResponse.json({ success: true, data: newPost[0] }, { status: 201 });
   } catch (error) {
+    console.error('Social posts POST error:', error);
     return NextResponse.json({ success: false, error: 'Failed to create social post' }, { status: 500 });
   }
 }
