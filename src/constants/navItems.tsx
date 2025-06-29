@@ -1,11 +1,8 @@
 import { MdOutlineDashboard } from "react-icons/md";
 import { LuUsers2 } from "react-icons/lu";
-import { TbTruckDelivery } from "react-icons/tb";
 import { RiCoupon2Line } from "react-icons/ri";
-import { TbSettings } from "react-icons/tb";
-import { TbTag } from "react-icons/tb";
-import { TbBriefcase } from "react-icons/tb";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { MessageCircle, Share2 } from "lucide-react";
 
 export const navItems = [
   {
@@ -19,19 +16,9 @@ export const navItems = [
     icon: <MdOutlineShoppingCart />,
   },
   {
-    title: "Categories",
-    url: "/categories",
-    icon: <TbTag />,
-  },
-  {
     title: "Customers",
     url: "/customers",
     icon: <LuUsers2 />,
-  },
-  {
-    title: "Orders",
-    url: "/orders",
-    icon: <TbTruckDelivery />,
   },
   {
     title: "Coupons",
@@ -39,13 +26,13 @@ export const navItems = [
     icon: <RiCoupon2Line />,
   },
   {
-    title: "Staff",
-    url: "/staff",
-    icon: <TbBriefcase />,
+    title: "AI Chat",
+    url: "/chat",
+    icon: <MessageCircle />,
   },
   {
-    title: "Settings",
-    url: "/settings",
-    icon: <TbSettings />,
+    title: "Social Media",
+    url: "/social",
+    icon: <Share2 />,
   },
 ];
